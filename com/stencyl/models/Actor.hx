@@ -443,17 +443,9 @@ class Actor extends #if use_actor_tilemap TileContainer #else Sprite #end
 		this.engine = engine;
 		
 		collidedList = new Array<Actor>();
-		
-		collisions = new IntHashTable<Collision>(16);
-		simpleCollisions = new IntHashTable<Collision>(16);
-		contacts = new IntHashTable<B2Contact>(16);
-		regionContacts = new IntHashTable<B2Contact>(16);
-		
-		collisions.reuseIterator = true;
-		simpleCollisions.reuseIterator = true;
-		contacts.reuseIterator = true;
-		regionContacts.reuseIterator = true;
-		
+
+		setupCollisionHashTables();
+
 		contactCount = 0;
 		collisionsCount = 0;
 		
@@ -669,11 +661,14 @@ class Actor extends #if use_actor_tilemap TileContainer #else Sprite #end
 		
 		registry = null;
 		
-		for(k in collisions.keys()) 
-		{
-			var d = collisions.get(k);
-			while(d.points.length > 0)
-				CollisionPoint.free(d.points.pop());
+		if(collisions != null)
+		{	
+			for(k in collisions.keys()) 
+			{
+				var d = collisions.get(k);
+				while(d.points.length > 0)
+					CollisionPoint.free(d.points.pop());
+			}
 		}
 		
 		collisions = null;
@@ -736,47 +731,43 @@ class Actor extends #if use_actor_tilemap TileContainer #else Sprite #end
 	
 	public function addAnim(anim:Animation)
 	{
-		var shapes = (physicsMode == NORMAL_PHYSICS) ? anim.physicsShapes : anim.simpleShapes;
-		
-		if(shapes != null)
-		{
-			var arr = new Array<Dynamic>();
+		if(physicsMode != MINIMAL_PHYSICS) {
+			var shapes = (physicsMode == NORMAL_PHYSICS) ? anim.physicsShapes : anim.simpleShapes;
 			
-			if(physicsMode == SIMPLE_PHYSICS)
+			if(shapes != null)
 			{
-				for(s in shapes)
-				{				
-					if(Std.isOfType(s, Hitbox) && physicsMode != NORMAL_PHYSICS)
-					{		
-						s = cast(s, Hitbox).clone();
-						s.assignTo(this);
-					}
+				var arr = new Array<Dynamic>();
 				
-					arr.push(s);
+				if(physicsMode == SIMPLE_PHYSICS)
+				{
+					for(s in shapes)
+					{				
+						if(Std.isOfType(s, Hitbox) && physicsMode != NORMAL_PHYSICS)
+						{		
+							s = cast(s, Hitbox).clone();
+							s.assignTo(this);
+						}
+					
+						arr.push(s);
+					}
 				}
-			}
-			
-			else if(physicsMode == MINIMAL_PHYSICS)
-			{
-				//no shapes at all
-			}
-			
-			else
-			{
-				for(s in shapes)
-				{				
-					arr.push(s);
+				else
+				{
+					for(s in shapes)
+					{				
+						arr.push(s);
+					}
 				}
-			}
-			
-			if(physicsMode != NORMAL_PHYSICS)
-			{
-				shapeMap.set(anim.animName, new Masklist(arr, this));
-			}
-			
-			else
-			{
-				shapeMap.set(anim.animName, arr);
+				
+				if(physicsMode != NORMAL_PHYSICS)
+				{
+					shapeMap.set(anim.animName, new Masklist(arr, this));
+				}
+				
+				else
+				{
+					shapeMap.set(anim.animName, arr);
+				}
 			}
 		}
 		
@@ -1234,16 +1225,8 @@ class Actor extends #if use_actor_tilemap TileContainer #else Sprite #end
 						CollisionPoint.free(d.points.pop());
 					collisions.unset(k);
 				}
-				
-				collisions = new IntHashTable<Collision>(16);
-				simpleCollisions = new IntHashTable<Collision>(16);
-				contacts = new IntHashTable<B2Contact>(16);
-				regionContacts = new IntHashTable<B2Contact>(16);
-				
-				collisions.reuseIterator = true;
-				simpleCollisions.reuseIterator = true;
-				contacts.reuseIterator = true;
-				regionContacts.reuseIterator = true;
+	
+				setupCollisionHashTables();
 				
 				contactCount = 0;
 				collisionsCount = 0;
@@ -1954,6 +1937,36 @@ class Actor extends #if use_actor_tilemap TileContainer #else Sprite #end
 	private static var manifold = new B2WorldManifold();
 	private var contactCount:Int;
 	private var collisionsCount:Int;
+
+	private function setupCollisionHashTables()
+	{
+		switch physicsMode
+		{
+			case NORMAL_PHYSICS:
+			{
+				simpleCollisions = new IntHashTable<Collision>(16);
+				collisions       = new IntHashTable<Collision>(16);
+				contacts         = new IntHashTable<B2Contact>(16);
+				regionContacts   = new IntHashTable<B2Contact>(16);
+
+				collisions.reuseIterator       = true;
+				simpleCollisions.reuseIterator = true;
+				contacts.reuseIterator         = true;
+				regionContacts.reuseIterator   = true;
+			}
+			case SIMPLE_PHYSICS:
+			{
+				simpleCollisions = new IntHashTable<Collision>(16);
+				contacts         = new IntHashTable<B2Contact>(16);
+				regionContacts   = new IntHashTable<B2Contact>(16);
+
+				simpleCollisions.reuseIterator = true;
+				contacts.reuseIterator         = true;
+				regionContacts.reuseIterator   = true;
+			}
+			case MINIMAL_PHYSICS:
+		}
+	}
 	
 	inline private function handleCollisions()
 	{
