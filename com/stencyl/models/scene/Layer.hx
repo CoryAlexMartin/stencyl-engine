@@ -68,13 +68,13 @@ class Layer extends RegularLayer
 	}
 
 	override public function updatePosition(x:Float, y:Float, elapsedTime:Float)
-	{	
+	{
 		var xScrolled:Float = 0;
 		var yScrolled:Float = 0;
 		var tempX:Float = 0;
 		var tempY:Float = 0;
 		
-		if (Config.pixelsnap)
+		if (Config.pixelsnap && !Engine.engine.camera.disablePixelSnap)
 		{
 			xScrolled = Std.int(x * scrollFactorX);
 			yScrolled = Std.int(y * scrollFactorY);

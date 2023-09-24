@@ -224,6 +224,7 @@ class Actor extends #if use_actor_tilemap TileContainer #else Sprite #end
 	public var attachedImages:Array<BitmapWrapper> = null;
 	
 	// These are for the smooth movement option.
+	public var disablePixelSnap:Bool = false;
 	public var smoothMove:Bool = false;
 	public var firstMove:Bool = false;
 	public var snapOnSet:Bool = false;
@@ -1746,7 +1747,7 @@ class Actor extends #if use_actor_tilemap TileContainer #else Sprite #end
 			transformMatrix.rotate(realAngle * Utils.RAD);
 		}
 		
-		if (Config.pixelsnap)
+		if (Config.pixelsnap && !disablePixelSnap)
 		{
 			transformMatrix.translate(Math.round(drawX) * Engine.SCALE, Math.round(drawY) * Engine.SCALE);
 		}
