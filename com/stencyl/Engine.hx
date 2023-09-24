@@ -2442,7 +2442,7 @@ class Engine
 				{
 					actor.createTime = Lib.getTimer();
 					allActors.set(actor.ID, actor);
-				
+
 					actor.dead = false;
 					actor.dying = false;
 					actor.recycled = false;
@@ -2732,7 +2732,7 @@ class Engine
 			}
 		}
 		
-		com.stencyl.models.actor.Animation.updateAll(elapsedTime);
+		if (!paused) com.stencyl.models.actor.Animation.updateAll(elapsedTime);
 		
 		if(!allActors.isEmpty())
 		{
