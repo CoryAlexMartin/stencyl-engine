@@ -30,6 +30,9 @@ class EventDispatcher
 					var posinfo = $event.posInfos[$event._dispatchIndex];
 					trace("Call event from: " + posinfo.fileName + ":" + posinfo.lineNumber);
 					#end
+
+					$event.listeners[$event._dispatchIndex]($a{args});
+					/*
 					try
 					{
 						$event.listeners[$event._dispatchIndex]($a{args});
@@ -38,6 +41,8 @@ class EventDispatcher
 					{
 						trace(e + com.stencyl.utils.Utils.printExceptionstackIfAvailable());
 					}
+					*/
+					
 					++$event._dispatchIndex;
 				}
 			}
