@@ -219,7 +219,7 @@ class Data
 		var address:Null<Int> = resourceLookup.get(id);
 		if(address == null)
 		{
-			trace("Error: resource with id " + id + " doesn't exist." + Utils.printCallstackIfAvailable());
+			if (id != -1) trace("Error: resource with id " + id + " doesn't exist." + Utils.printCallstackIfAvailable());
 			return null;
 		}
 		var obj:MbsObject = cast MbsDynamicHelper.readDynamicUsingPool(resourceListMbs, address, resourceReaderPool);
