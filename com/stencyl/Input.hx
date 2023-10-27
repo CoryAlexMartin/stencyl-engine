@@ -27,6 +27,8 @@ using com.stencyl.event.EventDispatcher;
 
 class Input
 {
+	public static var reportButtonPresses:Bool = true;
+
 	//mouse state
 	public static var mouseX:Float = 0;
 	public static var mouseY:Float = 0;
@@ -356,7 +358,7 @@ class Input
 	{
 		var control = _controlMap.get(controlName);
 		
-		return control != null && control.down;
+		return control != null && control.down && reportButtonPresses;
 	}
 
 	/**
@@ -368,7 +370,7 @@ class Input
 	{
 		var control = _controlMap.get(controlName);
 		
-		return control != null && control.pressed;
+		return control != null && control.pressed && reportButtonPresses;
 	}
 
 	/**
@@ -380,7 +382,7 @@ class Input
 	{
 		var control = _controlMap.get(controlName);
 		
-		return control != null && control.released;
+		return control != null && control.released && reportButtonPresses;
 	}
 	
 	public static function getButtonPressure(controlName:String):Float
