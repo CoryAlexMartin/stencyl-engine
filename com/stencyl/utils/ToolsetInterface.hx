@@ -24,6 +24,7 @@ class ToolsetInterface
 	public static var connected(default, null):Bool = false;
 	public static var ready(default, null):Bool = false;
 
+	public static var handlesLogging = false;
 	public static var assetUpdatedListeners = new Map<String, Array<Listener>>();
 
 	#if !(scriptable || cppia)
@@ -45,7 +46,7 @@ class ToolsetInterface
 			host = "localhost";
 		if(port != -1)
 		{
-			trace("GCI attempting to connect to toolset @" + host + ":" + port);
+			Log.debug("GCI attempting to connect to toolset @" + host + ":" + port);
 			configureListeners();
 			try
 			{
@@ -53,8 +54,7 @@ class ToolsetInterface
 			}
 			catch(e:Exception)
 			{
-				trace("Couldn't establish gci connection.");
-				trace(e.stack);
+				Log.fullError("Couldn't establish gci connection.", e);
 				unconfigureListeners();
 				ToolsetInterface.ready = true;
 			}
@@ -69,7 +69,7 @@ class ToolsetInterface
 
 	public static function cancelConnection():Void
 	{
-		trace("Couldn't establish gci connection.");
+		Log.error("Couldn't establish gci connection.");
 		instance.unconfigureListeners();
 		ToolsetInterface.ready = true;
 	}
@@ -102,32 +102,39 @@ class ToolsetInterface
 
 	private function closeHandler(event:Event):Void
 	{
-		trace("closeHandler: " + event);
+		Log.debug("closeHandler: " + event);
 	}
 
 	private function connectHandler(event:Event):Void
 	{
-		trace("connectHandler: " + event);
-		if(Config.buildConfig != null)
-		{
-			sendData
-			(
-				["Content-Type" => "Client-Registration", "Project-Name" => Config.projectName],
-				haxe.Json.stringify(Config.buildConfig)
-			);
-		}
+		Log.debug("connectHandler: " + event);
+		var connectionDetails:Map<String,String> = [
+			"Content-Type" => "Client-Registration",
+			"Project-Name" => Config.projectName,
+			"Build-Record" => Config.buildRecord,
+			"Build-Time" => Config.buildTime
+		];
+
+		#if testing
+		var launchVars:Map<String, String> = Reflect.field(Type.resolveClass("ApplicationMain"), "launchVars");
+		var gameSession = launchVars.get("gameSession");
+		if(gameSession != null)
+			connectionDetails.set("Attach-To-Session", gameSession);
+		#end
+
+		sendData(connectionDetails, null);
 	}
 
 	private function ioErrorHandler(event:IOErrorEvent):Void
 	{
-		trace("ioErrorHandler: " + event);
+		Log.error("ioErrorHandler: " + event);
 		if(!ToolsetInterface.ready)
 			cancelConnection();
 	}
 
 	private function securityErrorHandler(event:SecurityErrorEvent):Void
 	{
-		trace("securityErrorHandler: " + event);
+		Log.error("securityErrorHandler: " + event);
 	}
 
 	private var waiting:Bool = true;
@@ -139,10 +146,10 @@ class ToolsetInterface
 
 	private function socketDataHandler(event:ProgressEvent):Void
 	{
-		//trace("socketDataHandler: " + event);
+		//Log.verbose("socketDataHandler: " + event);
 		while(socket.bytesAvailable > 0)
 		{
-			//trace(socket.bytesAvailable + " bytes available on socket.");
+			//Log.verbose(socket.bytesAvailable + " bytes available on socket.");
 			if(waiting)
 			{
 				//throw it away if it's just a ping with no data.
@@ -152,8 +159,8 @@ class ToolsetInterface
 
 				waiting = false;
 				readingHeader = true;
-				//trace("Header expects " + bytesExpected + " bytes.");
-				//trace(socket.bytesAvailable + " bytes available.");
+				//Log.verbose("Header expects " + bytesExpected + " bytes.");
+				//Log.verbose(socket.bytesAvailable + " bytes available.");
 				bytes = new ByteArray(bytesExpected);
 			}
 
@@ -167,8 +174,8 @@ class ToolsetInterface
 					currentHeader = parseHeader(bytes);
 					bytesExpected = Std.parseInt(currentHeader.get("Content-Length"));
 					bytes = new ByteArray(bytesExpected);
-					//trace("Content expects " + bytesExpected + " bytes.");
-					//trace(socket.bytesAvailable + " bytes available.");
+					//Log.verbose("Content expects " + bytesExpected + " bytes.");
+					//Log.verbose(socket.bytesAvailable + " bytes available.");
 				}
 				else
 				{
@@ -236,7 +243,7 @@ class ToolsetInterface
 						}
 						traceQueue = null;
 					}
-					trace("GCI connected. Waiting for updated assets.");
+					Log.debug("GCI connected. Waiting for updated assets.");
 				}
 				if(header.get("Status") == "Assets Ready")
 				{
@@ -254,11 +261,7 @@ class ToolsetInterface
 				{
 					var sceneID = Std.parseInt(header.get("Scene-ID"));
 
-					if(ToolsetInterface.ready)
-						Engine.engine.switchScene(sceneID);
-					else
-						Config.initSceneID = sceneID;
-					
+					Engine.engine.switchScene(sceneID);
 				}
 				
 			#if !(scriptable || cppia)
@@ -283,7 +286,7 @@ class ToolsetInterface
 							}
 							else
 							{
-								trace("Couldn't resolve class: " + type);
+								Log.error("Couldn't resolve class: " + type);
 							}
 						}
 						
@@ -292,9 +295,9 @@ class ToolsetInterface
 						{
 							hscript.execute(content.readUTFBytes(content.length));
 						}
-						catch(ex:Dynamic)
+						catch(ex:haxe.Exception)
 						{
-							trace(ex);
+							Log.fullError(ex.message, ex);
 						}
 				}
 			#end
@@ -385,12 +388,15 @@ class ToolsetInterface
 			}
 			else
 			{
+				var extra = Log.getExtraInfo(pos);
 				instance.sendData
 				(
 					["Content-Type" => "Log",
 					"Class" => pos.className,
 					"Method" => pos.methodName,
-					"Line" => ""+pos.lineNumber],
+					"Line" => ""+pos.lineNumber,
+					"Level" => ""+(extra.level:Int),
+					"Time" => ""+extra.time],
 					"" + v
 				);
 			}
@@ -399,6 +405,7 @@ class ToolsetInterface
 		{
 			if(traceQueue == null)
 				traceQueue = [];
+			Log.ensureStamped(pos, INFO);
 			traceQueue.push({v: v, pos: pos});
 		}
 	}
@@ -407,12 +414,15 @@ class ToolsetInterface
 	{
 		if(ToolsetInterface.connected)
 		{
+			var extra = Log.getExtraInfo(pos);
 			instance.sendBinaryData
 			(
 				["Content-Type" => "ImageLog",
 				"Class" => pos.className,
 				"Method" => pos.methodName,
-				"Line" => ""+pos.lineNumber],
+				"Line" => ""+pos.lineNumber,
+				"Level" => ""+(extra.level:Int),
+				"Time" => ""+extra.time],
 				img.encode(img.rect, new PNGEncoderOptions())
 			);
 		}

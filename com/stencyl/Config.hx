@@ -9,6 +9,7 @@ import com.stencyl.graphics.BitmapWrapper;
 import com.stencyl.graphics.Scale;
 import com.stencyl.graphics.ScaleMode;
 import com.stencyl.models.PhysicsMode;
+import com.stencyl.utils.Log;
 import com.stencyl.utils.Utils;
 
 using Lambda;
@@ -36,11 +37,11 @@ class Config
 	public static var toolsetInterfaceHost:String;
 	public static var toolsetInterfacePort:Null<Int>;
 	public static var projectName:String;
-	public static var buildConfig:Dynamic;
+	public static var buildRecord:String;
+	public static var buildTime:String;
 
 	//Other
 	public static var releaseMode:Bool;
-	public static var useGciLogging:Bool;
 	public static var showConsole:Bool;
 	public static var debugDraw:Bool;
 	public static var disableBackButton:Bool;
@@ -106,7 +107,7 @@ class Config
 				
 				if(oldValue != newValue)
 				{
-					trace('value of $key changed: $oldValue -> $newValue');
+					Log.debug('value of $key changed: $oldValue -> $newValue');
 
 					switch(key)
 					{
@@ -126,9 +127,6 @@ class Config
 
 						case "disposeImages", "physicsMode":
 							needsGameReload = true;
-
-						case "releaseMode", "useGciLogging":
-							Engine.reloadTracingConfig();
 
 						case "showConsole":
 							Engine.engine.setStatsVisible(showConsole);
@@ -166,13 +164,13 @@ class Config
 		showConsole = data.showConsole;
 		debugDraw = data.debugDraw;
 		disableBackButton = data.disableBackButton;
-		useGciLogging = data.useGciLogging;
 		keys = asMap(data.keys);
 		scales = (data.scales : Array<String>).map(Scale.fromString).array();
 		toolsetInterfaceHost = data.toolsetInterfaceHost;
 		toolsetInterfacePort = data.toolsetInterfacePort;
 		projectName = data.projectName;
-		buildConfig = data.buildConfig;
+		buildRecord = data.buildRecord;
+		buildTime = data.buildTime;
 
 		#if(flash || html5)
 		lockURL = data.lockURL;

@@ -25,7 +25,7 @@ import openfl.events.ErrorEvent;
 import openfl.errors.Error;
 
 import haxe.Log in HaxeLog;
-import lime.utils.Log in LimeLog;
+import com.stencyl.utils.Log;
 
 using StringTools;
 
@@ -40,19 +40,29 @@ using StringTools;
 	private static var universal:Universal;
 	private static var extensions:Array<Extension>;
 	private static var originalHaxeTrace:Dynamic;
-	
+	#if testing
+	private static var launchVars:Map<String, String>;
+	#end
+
 	public static function main ()
 	{
+		#if testing
+		loadLaunchVars();
+		#end
+
+		configureTracing();
+
+		#if testing
+		Log.debug("Launch Vars: " + launchVars);
+		#end
+		
 		#if cppia
 		if(StencylCppia.gamePath != null)
 			Sys.setCwd(StencylCppia.gamePath);
 		#end
 		
-		configureHaxeTracing();
-		
 		Config.load();
 		Input.loadInputConfig();
-		reloadTracingConfig();
 		
 		System.__registerEntryPoint ("::APP_FILE::", create);
 		
@@ -108,13 +118,41 @@ using StringTools;
 		preloaderComplete();
 	}
 
+	#if testing
+	private static function loadLaunchVars()
+	{
+		launchVars = [];
+		#if flash
+		for(field in Reflect.fields(Lib.current.loaderInfo.parameters))
+		{
+			launchVars[field] = Reflect.field(Lib.current.loaderInfo.parameters, field);
+		}
+		#elseif html5
+		var params = new js.html.URL(js.Browser.location.href).searchParams;
+		params.forEach((value, key) -> {
+			launchVars.set(key, value);
+		});
+		#elseif android
+		launchVars = com.stencyl.native.Native.getIntentExtras();
+		#elseif sys
+		for(arg in #if ios com.stencyl.native.Native.getProgramArguments() #else Sys.args() #end)
+		{
+			var equalsIndex = arg.indexOf("=");
+			if(equalsIndex < 1 || equalsIndex == arg.length - 1) continue;
+			launchVars[arg.substring(0, equalsIndex)] = arg.substring(equalsIndex + 1);
+		}
+		#end
+	}
+	#end
+
 	public static function create (config):Void
 	{
 		#if stencyltools
 		{
-			var startTime = Timer.stamp();
+			var startTime = 0.0;
 			var tryTimeout = function() {
-				if(!ToolsetInterface.connected && Timer.stamp() - startTime > #if flash 5 #else 2 #end)
+				if(startTime == 0.0) startTime = Timer.stamp() - 0.01;
+				if(!ToolsetInterface.connected && Timer.stamp() - startTime > 2)
 				{
 					ToolsetInterface.cancelConnection();
 				}
@@ -292,12 +330,12 @@ using StringTools;
 			 ::end::
 			::end::
 		}
-		catch(e:Dynamic)
+		catch(e:haxe.Exception)
 		{
 			#if stencyltools
-			if(Config.useGciLogging)
+			if(ToolsetInterface.handlesLogging)
 			{
-				trace(e + Utils.printExceptionstackIfAvailable());
+				Log.fullError(e.message, e);
 				ToolsetInterface.preloadedUpdate();
 			}
 			#end
@@ -350,12 +388,12 @@ using StringTools;
 			
 			new Engine(universal, extensions);
 			
-		} catch (e:Dynamic) {
+		} catch (e:haxe.Exception) {
 			
 			#if stencyltools
-			if(Config.useGciLogging)
+			if(ToolsetInterface.handlesLogging)
 			{
-				trace(e + Utils.printExceptionstackIfAvailable());
+				Log.fullError(e.message, e);
 				ToolsetInterface.preloadedUpdate();
 			}
 			#end
@@ -367,67 +405,88 @@ using StringTools;
 		#end
 	}
 	
-	public static function configureHaxeTracing():Void
+	public static function configureTracing():Void
 	{
-		#if (flash9 || flash10)
-		HaxeLog.trace = function(v,?pos) { untyped __global__["trace"]("Stencyl:" + pos.className+"#"+pos.methodName+"("+pos.lineNumber+"):",v); }
-		#elseif flash
-		HaxeLog.trace = function(v,?pos) { flash.Lib.trace("Stencyl:" + pos.className+"#"+pos.methodName+"("+pos.lineNumber+"): "+v); }
+		#if testing
+
+		#if flash
+		//Since flash output is written to a predetermined file that's the same
+		//for all sessions, we need to mark the session ID to determine which
+		//session the log output corresponds to.
+
+		var gameSession = launchVars.get("gameSession");
+		if(gameSession == null) gameSession = "0";
+		flash.Lib.trace("gameSession="+gameSession);
 		#end
-		
+
 		originalHaxeTrace = HaxeLog.trace;
-		LimeLog.level = VERBOSE;
+		Log.level = VERBOSE;
+		
+		HaxeLog.trace = function(v:String,?pos:haxe.PosInfos) {
+			var extra = Log.getExtraInfo(pos);
+			var str = 'Stencyl:${extra.time}:${extra.level}:${pos.className}:${pos.methodName}:${pos.lineNumber}:${v.length}:$v';
+			#if flash
+			flash.Lib.trace(str);
+			#elseif js
+			(untyped console).log(str);
+			#elseif sys
+			Sys.println(str);
+			#else
+			throw new haxe.exceptions.NotImplementedException()
+			#end
+		}
+
+		#if stencyltools
+		if(launchVars.get("trace") == "gci")
+		{
+			HaxeLog.trace = ToolsetInterface.gciTrace;
+			ToolsetInterface.handlesLogging = true;
+		}
+		#end
+
+		#else
+
+		HaxeLog.trace = function(v,?pos) { };
+		Log.level = NONE;
+
+		#end
 	}
 	
-	public static function reloadTracingConfig():Void
-	{
-		if(!Config.releaseMode)
-		{
-			HaxeLog.trace = originalHaxeTrace;
-			
-			#if stencyltools
-			if(Config.useGciLogging)
-				HaxeLog.trace = ToolsetInterface.gciTrace;
-			#end
-
-			LimeLog.level = VERBOSE;
-		}
-		else
-		{
-			HaxeLog.trace = function(v,?pos) { };
-			LimeLog.level = NONE;
-		}
-	}
-
 	static function uncaughtErrorHandler(event:UncaughtErrorEvent):Void
 	{
 		#if (html5 && stencyltools)
 		
-		if(Config.useGciLogging && Reflect.hasField(event.error, "stack"))
+		if(ToolsetInterface.handlesLogging && Reflect.hasField(event.error, "stack"))
 		{
-			trace(event.error.stack);
+			Log.error(event.error.stack);
 		}
 		
 		#else
 		
 		if (Std.isOfType(event.error, Error))
 		{
-			trace(cast(event.error, Error).getStackTrace());
+			var error = cast(event.error, Error);
+			#if flash
+			Log.error(error.getStackTrace());
+			#else
+			Log.fullError(error.message, error);
+			#end
 		}
 		else if (Std.isOfType(event.error, ErrorEvent))
 		{
-			trace(cast(event.error, ErrorEvent).text);
+			var errorEvent = cast(event.error, ErrorEvent);
+			Log.error(errorEvent.text);
 		}
 		else
 		{
-			trace(Std.string(event.error));
+			Log.error(Std.string(event.error));
 		}
 		
 		#end
 		
 		#if (debug && stencyltools && (cpp || hl))
 		
-		trace(CallStack.toString(CallStack.exceptionStack()));
+		Log.error(CallStack.toString(CallStack.exceptionStack()));
 		ToolsetInterface.preloadedUpdate();
 		
 		#end

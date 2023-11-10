@@ -1,5 +1,6 @@
 package com.stencyl.behavior;
 
+import com.stencyl.utils.Log;
 import com.stencyl.utils.Utils;
 
 import openfl.display.Graphics;
@@ -52,10 +53,9 @@ class Behavior
 				cls = Type.resolveClass(classname);
 			}
 			
-			catch(e:String)
+			catch(e:haxe.Exception)
 			{
-				trace("Could not load: " + classname);
-				trace(e);
+				Log.fullError("Could not load: " + classname, e);
 			}
 		}
 		
@@ -73,7 +73,7 @@ class Behavior
 	{
 		if(cls == null)
 		{
-			trace("Could not init Behavior: " + name + " with " + classname);
+			Log.error("Could not init Behavior: " + name + " with " + classname);
 			script = new SceneScript();
 			return;
 		}
@@ -82,7 +82,7 @@ class Behavior
 		{
 			if (Type.getClass(parent) == Engine)
 			{
-				trace("Actor behavior " + name + " failed to init because parent is scene.  Open and save the scene to resolve this error.");
+				Log.error("Actor behavior " + name + " failed to init because parent is scene.  Open and save the scene to resolve this error.");
 				script = new SceneScript();
 				return;
 			}
@@ -92,7 +92,7 @@ class Behavior
 		{
 			if (Type.getClass(parent) == com.stencyl.models.Actor)
 			{
-				trace("Scene behavior " + name + " failed to init because parent is actor.  Open and save the actor to resolve this error.");
+				Log.error("Scene behavior " + name + " failed to init because parent is actor.  Open and save the actor to resolve this error.");
 				script = new SceneScript();
 				return;
 			}
@@ -110,11 +110,11 @@ class Behavior
 				script.scriptInit = true;
 			}
 			
-			catch(e:String)
+			catch(e:haxe.Exception)
 			{
-				trace
+				Log.fullError
 				(
-					"Error in when created for behavior: " + name + "\n" + e + Utils.printExceptionstackIfAvailable()
+					"Error in when created for behavior: " + name, e
 				);
 			}
 		}
@@ -226,9 +226,9 @@ class Behavior
 				}
 			}
 			
-			catch(e:String)
+			catch(e:haxe.Exception)
 			{
-				trace("Could not init attribute: " + a.fieldName + " - " + e + Utils.printExceptionstackIfAvailable());
+				Log.fullError("Could not init attribute: " + a.fieldName, e);
 			}
 		}
 	}

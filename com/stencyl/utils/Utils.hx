@@ -890,16 +890,15 @@ class Utils
 		#end
 			Reflect.setField(so.data, name, clone(value));
 		#if debug
-		} catch (error:String) {
-			if(error == "deep clone")
+		} catch (error:haxe.Exception) {
+			if(error.message == "deep clone")
 			{
-				trace("Error: can't save attribute due to recursion [name=" + name + "]");
+				Log.fullError("Error: can't save attribute due to recursion [name=" + name + "]", error);
 			}
 			#if (cpp || hl)
-			else if(error.indexOf("Invalid field:") == 0)
+			else if(error.message.indexOf("Invalid field:") == 0)
 			{
-				trace("Error: can't save attribute due to contained properties [name=" + name + ", value=" + value+"]");
-				trace(error);
+				Log.fullError("Error: can't save attribute due to contained properties [name=" + name + ", value=" + value+"]", error);
 			}
 			#end
 			else throw error;
@@ -946,9 +945,9 @@ class Utils
 		    flushStatus = so.flush();
 		} 
 		
-		catch(e:Dynamic) 
+		catch(e:haxe.Exception) 
 		{
-			trace("Error: Failed to flush save file: " + e);
+			Log.fullError("Error: Failed to flush save file: " + e.message, e);
 			if (onComplete != null)
 				onComplete(false);
 			return;
@@ -1003,7 +1002,7 @@ class Utils
 	{
 		#if mobile
 		var path = SharedObject.__getPath("", name);
-		trace(path + " exists? " + FileSystem.exists(path));
+		Log.debug(path + " exists? " + FileSystem.exists(path));
 		
 		if(overwrite || !FileSystem.exists(path))
 		{
@@ -1011,7 +1010,7 @@ class Utils
 			
 			if(data != null && data != "")
 			{
-				trace("Converting old data");
+				Log.debug("Converting old data");
 				try
 				{
 					var directory = Path.directory(path);
@@ -1027,12 +1026,12 @@ class Utils
 					
 					if(FileSystem.exists(path))
 					{
-						trace("Legacy data converted successfully");
+						Log.debug("Legacy data converted successfully");
 					}
 				}
-				catch(e:Dynamic)
+				catch(e:haxe.Exception)
 				{
-					trace(e);
+					Log.fullError(e.message, e);
 				}
 			}
 		}
@@ -1101,10 +1100,10 @@ class Utils
 			return BitmapData.loadFromBase64(data, "png")
 				.then(function (bmp) return Future.withValue((new Bitmap(bmp) : DisplayObject)));
 		}
-		catch(msg:String)
+		catch(msg:haxe.Exception)
 		{
-			trace("(You probably have a old browser) Error occurred: " + msg);
-			return cast Future.withError("(You probably have a old browser) Error occurred: " + msg);
+			Log.fullError("(You probably have a old browser) Error occurred: " + msg.message, msg);
+			return cast Future.withError("(You probably have a old browser) Error occurred: " + msg.message);
 		}
 		
 		#elseif !testing

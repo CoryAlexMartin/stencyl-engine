@@ -28,7 +28,7 @@ class EventDispatcher
 				{
 					#if debug_event_dispatch
 					var posinfo = $event.posInfos[$event._dispatchIndex];
-					trace("Call event from: " + posinfo.fileName + ":" + posinfo.lineNumber);
+					com.stencyl.utils.Log.verbose("Call event from: " + posinfo.fileName + ":" + posinfo.lineNumber);
 					#end
 
 					$event.listeners[$event._dispatchIndex]($a{args});
@@ -37,9 +37,9 @@ class EventDispatcher
 					{
 						$event.listeners[$event._dispatchIndex]($a{args});
 					}
-					catch(e:Dynamic)
+					catch(e:haxe.Exception)
 					{
-						trace(e + com.stencyl.utils.Utils.printExceptionstackIfAvailable());
+						com.stencyl.utils.Log.fullError(e.message, e);
 					}
 					*/
 					

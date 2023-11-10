@@ -1,5 +1,6 @@
 package com.stencyl.behavior;
 
+import com.stencyl.utils.Log;
 import com.stencyl.utils.Utils;
 
 class BehaviorManager
@@ -62,10 +63,9 @@ class BehaviorManager
 					bObj.script.scriptInit = true;
 				}
 			
-				catch(e:String)
+				catch(e:haxe.Exception)
 				{
-					trace("Error in when created for behavior: " + bObj.name);
-					trace(e + Utils.printExceptionstackIfAvailable());
+					Log.fullError("Error in when created for behavior: " + bObj.name, e);
 				}
 			}
 			
@@ -120,7 +120,7 @@ class BehaviorManager
 
 			if(field == null && !ReflectionHelper.hasField(b.script.wrapper.classname, attributeName))
 			{
-				trace("Get Warning: Attribute " + attributeName + " does not exist for " + behaviorName + Utils.printCallstackIfAvailable());
+				Log.warn("Get Warning: Attribute " + attributeName + " does not exist for " + behaviorName + Utils.printCallstackIfAvailable());
 			}
 			
 			return field;
@@ -128,7 +128,7 @@ class BehaviorManager
 		
 		else
 		{
-			trace("Warning: Behavior does not exist - " + behaviorName + Utils.printCallstackIfAvailable());
+			Log.warn("Warning: Behavior does not exist - " + behaviorName + Utils.printCallstackIfAvailable());
 		}
 		
 		return null;
@@ -148,13 +148,13 @@ class BehaviorManager
 			
 			else
 			{
-				trace("Set Warning: Attribute " + attributeName + " does not exist for " + behaviorName + Utils.printCallstackIfAvailable());
+				Log.warn("Set Warning: Attribute " + attributeName + " does not exist for " + behaviorName + Utils.printCallstackIfAvailable());
 			}
 		}
 		
 		else
 		{
-			trace("Warning: Behavior does not exist - " + behaviorName + Utils.printCallstackIfAvailable());	
+			Log.warn("Warning: Behavior does not exist - " + behaviorName + Utils.printCallstackIfAvailable());	
 		}
 	}
 
@@ -203,7 +203,7 @@ class BehaviorManager
 			#if flash
 			else
 			#else
-			catch(e:String)
+			catch(e:haxe.Exception)
 			#end
 			{
 				item.script.forwardMessage(msg);
@@ -257,7 +257,7 @@ class BehaviorManager
 			#if flash
 			else
 			#else
-			catch(e:String)
+			catch(e:haxe.Exception)
 			#end
 			{
 				item.script.forwardMessage(msg);
