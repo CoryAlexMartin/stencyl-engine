@@ -358,7 +358,7 @@ class Input
 	{
 		var control = _controlMap.get(controlName);
 		
-		return control != null && control.down && reportButtonPresses;
+		return control != null && control.down;
 	}
 
 	/**
@@ -370,7 +370,7 @@ class Input
 	{
 		var control = _controlMap.get(controlName);
 		
-		return control != null && control.pressed && reportButtonPresses;
+		return control != null && control.pressed;
 	}
 
 	/**
@@ -382,7 +382,7 @@ class Input
 	{
 		var control = _controlMap.get(controlName);
 		
-		return control != null && control.released && reportButtonPresses;
+		return control != null && control.released;
 	}
 	
 	public static function getButtonPressure(controlName:String):Float

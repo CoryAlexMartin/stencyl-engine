@@ -1413,17 +1413,17 @@ class Script
 
 	public static function isKeyDown(abstractKey:String):Bool
 	{
-		return Input.check(abstractKey);
+		return Input.check(abstractKey) && Input.reportButtonPresses;
 	}
 
 	public static function isKeyPressed(abstractKey:String):Bool
 	{
-		return Input.pressed(abstractKey);
+		return Input.pressed(abstractKey) && Input.reportButtonPresses;
 	}
 	
 	public static function isKeyReleased(abstractKey:String):Bool
 	{
-		return Input.released(abstractKey);
+		return Input.released(abstractKey) && Input.reportButtonPresses;
 	}
 	
 	public static function isMouseDown():Bool
