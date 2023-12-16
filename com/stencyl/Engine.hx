@@ -2787,6 +2787,14 @@ class Engine
 			}
 		}
 
+		// Addition made for Leapin Lads by Cory
+		//
+		// This is the only reasonable way I can think to get shadows to never
+		// lag behind their parent actors. Scene behavior whenUpdated events
+		// happen before actor events, and actor event orders are seemingly
+		// random.
+		scripts.ActorShadows.updateShadows();
+
 		keyPollOccurred = false;
 			
 		for(n in 0...disableCollisionList.length)
