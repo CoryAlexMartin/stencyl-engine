@@ -2928,6 +2928,7 @@ class Engine
 		{
 			update(STEP_SIZE);
 			acc -= STEP_SIZE;
+			#if leapin_lads scripts.Controller.update(); #end
 			Input.update();
 		}
 		
