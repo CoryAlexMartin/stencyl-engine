@@ -60,8 +60,6 @@ using StringTools;
 		if(StencylCppia.gamePath != null)
 			Sys.setCwd(StencylCppia.gamePath);
 		#end
-		
-		configureHaxeTracing();
 
 		#if extra_gamepad_mappings
 		// Add mappings early so that they may apply to already plugged in gamepads.
