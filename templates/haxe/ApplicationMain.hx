@@ -61,12 +61,6 @@ using StringTools;
 			Sys.setCwd(StencylCppia.gamePath);
 		#end
 
-		#if extra_gamepad_mappings
-		// Add mappings early so that they may apply to already plugged in gamepads.
-		// The ones added in lime.ui.Window are added too late, so we include those too.
-		scripts.GamepadDB.addExtraGamepadMappings();
-		#end
-		
 		Config.load();
 		Input.loadInputConfig();
 		
