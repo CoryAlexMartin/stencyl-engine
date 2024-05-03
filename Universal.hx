@@ -100,6 +100,15 @@ class Universal extends Sprite
 	
 		Engine.stage = stage;
 
+		#if desktop
+		// Use this instead of stage.fullScreenWidth and stage.fullScreenHeight because those values don't update if the user's resolution changes at runtime.
+		var fullScreenWidth  = Std.int(Lib.application.window.display.bounds.width);
+		var fullScreenHeight = Std.int(Lib.application.window.display.bounds.height);
+		#else
+		var fullScreenWidth = stage.fullScreenWidth;
+		var fullScreenHeight = stage.fullScreenHeight;
+		#end
+
 		//enabled scales
 		var scales = new Map<Scale,Bool>();
 		for(scale in Config.scales)
@@ -107,22 +116,22 @@ class Universal extends Sprite
 			scales.set(scale, true);
 		}
 
-		windowWidth = isFullScreen ? stage.fullScreenWidth : Config.stageWidth * Config.gameScale;
-		windowHeight = isFullScreen ? stage.fullScreenHeight : Config.stageHeight * Config.gameScale;
+		windowWidth = isFullScreen ? fullScreenWidth : Config.stageWidth * Config.gameScale;
+		windowHeight = isFullScreen ? fullScreenHeight : Config.stageHeight * Config.gameScale;
 
 		Log.debug("Game Width: " + Config.stageWidth);
 		Log.debug("Game Height: " + Config.stageHeight);
 		Log.debug("Game Scale: " + Config.gameScale);
 		Log.debug("Window Width: " + windowWidth);
 		Log.debug("Window Height: " + windowHeight);
-		Log.debug("FullScreen Width: " + stage.fullScreenWidth);
-		Log.debug("FullScreen Height: " + stage.fullScreenHeight);
+		Log.debug("FullScreen Width: " + fullScreenWidth);
+		Log.debug("FullScreen Height: " + fullScreenHeight);
 		Log.debug("Device Pixel Ratio: " + stage.window.scale);
 		Log.debug("Enabled Scales: " + Config.scales);
 		Log.debug("Scale Mode: " + Config.scaleMode);
 		
 		var theoreticalWindowedScale = getDesiredScale(windowWidth, windowHeight, Config.stageWidth, Config.stageHeight);
-		var theoreticalFullscreenScale = getDesiredScale(stage.fullScreenWidth, stage.fullScreenHeight, Config.stageWidth, Config.stageHeight);
+		var theoreticalFullscreenScale = getDesiredScale(fullScreenWidth, fullScreenHeight, Config.stageWidth, Config.stageHeight);
 		
 		var theoreticalScale = Config.forceHiResAssets ? theoreticalFullscreenScale : theoreticalWindowedScale;
 		
@@ -317,45 +326,22 @@ class Universal extends Sprite
 	
 	private function getDesiredScale(checkWidth:Float, checkHeight:Float, baseWidth:Int, baseHeight:Int):Float
 	{
-		var x1 = baseWidth;
-		var y1 = baseHeight;
-		
-		var x2 = x1 * 2;
-		var y2 = y1 * 2;
-		
-		var x3 = x1 * 3;
-		var y3 = y1 * 3;
-		
-		var x4 = x2 * 2;
-		var y4 = y2 * 2;
-		
-		var x15 = x3 / 2;
-		var y15 = y3 / 2;
-		
-		
-		if(checkWidth >= x4 && checkHeight >= y4)
+		function check(s:Float):Bool
 		{
-			return 4;
-		}
-		
-		else if(checkWidth >= x3 && checkHeight >= y3)
+			return (checkWidth >= baseWidth*s && checkHeight >= baseHeight*s);
+		} 
+
 		{
-			return 3;
+			var scale = 16; // Max scale
+			while(scale > 1)
+			{
+				if(check(scale)) return scale;
+				scale -= 1;
+			}
 		}
-		
-		else if(checkWidth >= x2 && checkHeight >= y2)
-		{
-			return 2;
-		}
-		
-		else if(checkWidth >= x15 && checkHeight >= y15)
-		{
-			return 1.5;
-		}
-		
-		else
-		{
-			return 1;
-		}
+
+		if(check(1.5)) return 1.5;
+
+		return 1;
 	}
 }
