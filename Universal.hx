@@ -80,12 +80,14 @@ class Universal extends Sprite
 		#if !flash
 		stage.__setLogicalSize (0, 0);
 		#end
+
+		var isTateMode = Math.abs(rotation) == 90;
 		
 		#if desktop
 		if(!isFullScreen)
 		{
-			if (Math.abs(rotation) == 90) window.resize(Std.int(Config.stageHeight * Config.gameScale), Std.int(Config.stageWidth * Config.gameScale));
-			else window.resize(Std.int(Config.stageWidth * Config.gameScale), Std.int(Config.stageHeight * Config.gameScale));
+			if (isTateMode) window.resize(Std.int(Config.stageHeight * Config.gameScale), Std.int(Config.stageWidth * Config.gameScale));
+			else            window.resize(Std.int(Config.stageWidth * Config.gameScale), Std.int(Config.stageHeight * Config.gameScale));
 		}
 		#end
 
@@ -117,8 +119,8 @@ class Universal extends Sprite
 			scales.set(scale, true);
 		}
 
-		windowWidth = isFullScreen ? fullScreenWidth : Config.stageWidth * Config.gameScale;
-		windowHeight = isFullScreen ? fullScreenHeight : Config.stageHeight * Config.gameScale;
+		windowWidth = isFullScreen ? fullScreenWidth : window.width;
+		windowHeight = isFullScreen ? fullScreenHeight : window.height;
 
 		Log.debug("Game Width: " + Config.stageWidth);
 		Log.debug("Game Height: " + Config.stageHeight);
@@ -131,8 +133,19 @@ class Universal extends Sprite
 		Log.debug("Enabled Scales: " + Config.scales);
 		Log.debug("Scale Mode: " + Config.scaleMode);
 		
-		var theoreticalWindowedScale = getDesiredScale(windowWidth, windowHeight, Config.stageWidth, Config.stageHeight);
-		var theoreticalFullscreenScale = getDesiredScale(fullScreenWidth, fullScreenHeight, Config.stageWidth, Config.stageHeight);
+		var w : Int;
+		var h : Int;
+		if (isTateMode) {
+			w = Config.stageHeight;
+			h = Config.stageWidth;
+		}
+		else {
+			w = Config.stageWidth;
+			h = Config.stageHeight;
+		}
+		var allow1point5 : Bool = #if leapin_lads false #else true #end;
+		var theoreticalWindowedScale   = getDesiredScale(windowWidth, windowHeight, w, h, allow1point5);
+		var theoreticalFullscreenScale = getDesiredScale(fullScreenWidth, fullScreenHeight, w, h, allow1point5);
 		
 		var theoreticalScale = Config.forceHiResAssets ? theoreticalFullscreenScale : theoreticalWindowedScale;
 		
@@ -326,7 +339,7 @@ class Universal extends Sprite
 			var drawY = y / scaleY;
 			var drawWindowWidth = windowWidth / scaleX;
 
-			if (Math.abs(rotation) == 90) {
+			if (isTateMode) {
 				var drawX2 = drawX;
 				drawX = drawY;
 				drawY = drawX2;
@@ -346,7 +359,7 @@ class Universal extends Sprite
 		Log.debug("Scale Y: " + scaleY);
 	}
 	
-	private function getDesiredScale(checkWidth:Float, checkHeight:Float, baseWidth:Int, baseHeight:Int):Float
+	private function getDesiredScale(checkWidth:Float, checkHeight:Float, baseWidth:Int, baseHeight:Int, allow1point5:Bool = true):Float
 	{
 		function check(s:Float):Bool
 		{
@@ -362,7 +375,7 @@ class Universal extends Sprite
 			}
 		}
 
-		if(check(1.5)) return 1.5;
+		if(allow1point5 && check(1.5)) return 1.5;
 
 		return 1;
 	}
