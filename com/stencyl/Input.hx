@@ -514,6 +514,23 @@ class Input
 		//Mouse is always in absolute coordinates, so adjust when screen size != game size
 		mouseX = (Engine.stage.mouseX - Engine.screenOffsetX) / Engine.screenScaleX;
 		mouseY = (Engine.stage.mouseY - Engine.screenOffsetY) / Engine.screenScaleY;
+
+		#if leapin_lads
+		switch scripts.Video.currentTateRotation {
+			case TateRotation_None:
+			case TateRotation_RightDown:
+				mouseY *= -1;
+				var mx = mouseX;
+				mouseX = mouseY;
+				mouseY = mx;
+
+			case TateRotation_LeftDown:
+				mouseX *= -1;
+				var mx = mouseX;
+				mouseX = mouseY;
+				mouseY = mx;
+		}
+		#end
 	
 		var i = _controlsToReset.length;
 		while(--i >= 0)
