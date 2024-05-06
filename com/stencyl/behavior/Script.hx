@@ -1441,44 +1441,7 @@ class Script
 	{
 		return Input.mouseReleased;
 	}
-
-#if leapin_lads
-	public static function getTateMouseX():Float {
-		return switch cast(scripts.Prefs.tateRotation, scripts.Prefs.TateRotation) {
-			case TateRotation_None:      Input.mouseX;
-			case TateRotation_RightDown: Config.stageWidth - Input.mouseY;
-			case TateRotation_LeftDown:  Input.mouseY;
-		}
-	}
-
-	public static function getTateMouseY():Float {
-		return switch cast(scripts.Prefs.tateRotation, scripts.Prefs.TateRotation) {
-			case TateRotation_None:      Input.mouseY;
-			case TateRotation_RightDown: Input.mouseX;
-			case TateRotation_LeftDown:  Config.stageHeight - Input.mouseX;
-		}
-	}
-
-	public static function getMouseX():Float
-	{
-		return getTateMouseX() / Engine.SCALE;
-	}
-
-	public static function getMouseY():Float
-	{
-		return getTateMouseY() / Engine.SCALE;
-	}
 	
-	public static function getMouseWorldX():Float
-	{
-		return getTateMouseX() / Engine.SCALE + Engine.cameraX;
-	}
-	
-	public static function getMouseWorldY():Float
-	{
-		return getTateMouseY() / Engine.SCALE + Engine.cameraY;
-	}
-#else
 	public static function getMouseX():Float
 	{
 		return Input.mouseX / Engine.SCALE;
@@ -1498,7 +1461,6 @@ class Script
 	{
 		return Input.mouseY / Engine.SCALE + Engine.cameraY;
 	}
-#end
 	
 	public static function getMousePressedX():Float
 	{
