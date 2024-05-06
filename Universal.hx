@@ -84,7 +84,8 @@ class Universal extends Sprite
 		#if desktop
 		if(!isFullScreen)
 		{
-			window.resize(Std.int(Config.stageWidth * Config.gameScale), Std.int(Config.stageHeight * Config.gameScale));
+			if (Math.abs(rotation) == 90) window.resize(Std.int(Config.stageHeight * Config.gameScale), Std.int(Config.stageWidth * Config.gameScale));
+			else window.resize(Std.int(Config.stageWidth * Config.gameScale), Std.int(Config.stageHeight * Config.gameScale));
 		}
 		#end
 
@@ -228,10 +229,24 @@ class Universal extends Sprite
 				}
 			}
 
-			if(Config.scaleMode != ScaleMode.SCALE_TO_FIT_FULLSCREEN && Config.scaleMode != ScaleMode.FULLSCREEN)
+			if(isFullScreen && Config.scaleMode != ScaleMode.SCALE_TO_FIT_FULLSCREEN && Config.scaleMode != ScaleMode.FULLSCREEN)
 			{
-				x += (windowWidth - scaledStageWidth * scaleX) / 2;
-				y += (windowHeight - scaledStageHeight * scaleY) / 2;
+				if (rotation == 90) {
+					x += (windowWidth + scaledStageHeight * scaleY) / 2;
+					y += (windowHeight - scaledStageWidth * scaleX) / 2;
+				}
+				else if (rotation == -90) {
+					x += (windowWidth - scaledStageHeight * scaleY) / 2;
+					y += (windowHeight + scaledStageWidth * scaleX) / 2;
+				}
+				else {
+					x += (windowWidth - scaledStageWidth * scaleX) / 2;
+					y += (windowHeight - scaledStageHeight * scaleY) / 2;
+				}
+			}
+			else {
+				if      (rotation == -90)  y += scaledStageWidth * scaleX;
+				else if (rotation == 90)   x += scaledStageHeight * scaleY;
 			}
 		}
 
@@ -310,11 +325,18 @@ class Universal extends Sprite
 			var drawX = x / scaleX;
 			var drawY = y / scaleY;
 			var drawWindowWidth = windowWidth / scaleX;
+
+			if (Math.abs(rotation) == 90) {
+				var drawX2 = drawX;
+				drawX = drawY;
+				drawY = drawX2;
+			}
+
 			maskLayer.graphics.beginFill(stage.color);
-			maskLayer.graphics.drawRect(-drawX, -drawY, drawWindowWidth, drawY);
-			maskLayer.graphics.drawRect(-drawX, 0, drawX, scaledStageHeight);
-			maskLayer.graphics.drawRect(scaledStageWidth, 0, drawX, scaledStageHeight);
-			maskLayer.graphics.drawRect(-drawX, scaledStageHeight, drawWindowWidth, drawY);
+			maskLayer.graphics.drawRect(-drawX, -drawY, drawWindowWidth, drawY);            // top
+			maskLayer.graphics.drawRect(-drawX, 0, drawX, scaledStageHeight);               // left
+			maskLayer.graphics.drawRect(scaledStageWidth, 0, drawX, scaledStageHeight);     // right
+			maskLayer.graphics.drawRect(-drawX, scaledStageHeight, drawWindowWidth, drawY); // bottom
 			maskLayer.graphics.endFill();
 		}
 		
