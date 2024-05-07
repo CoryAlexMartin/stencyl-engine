@@ -133,19 +133,19 @@ class Universal extends Sprite
 		Log.debug("Enabled Scales: " + Config.scales);
 		Log.debug("Scale Mode: " + Config.scaleMode);
 		
-		var w : Int;
-		var h : Int;
+		var visualGameW : Int;
+		var visualGameH : Int;
 		if (isTateMode) {
-			w = Config.stageHeight;
-			h = Config.stageWidth;
+			visualGameW = Config.stageHeight;
+			visualGameH = Config.stageWidth;
 		}
 		else {
-			w = Config.stageWidth;
-			h = Config.stageHeight;
+			visualGameW = Config.stageWidth;
+			visualGameH = Config.stageHeight;
 		}
 		var allow1point5 : Bool = #if leapin_lads false #else true #end;
-		var theoreticalWindowedScale   = getDesiredScale(windowWidth, windowHeight, w, h, allow1point5);
-		var theoreticalFullscreenScale = getDesiredScale(fullScreenWidth, fullScreenHeight, w, h, allow1point5);
+		var theoreticalWindowedScale   = getDesiredScale(windowWidth, windowHeight, visualGameW, visualGameH, allow1point5);
+		var theoreticalFullscreenScale = getDesiredScale(fullScreenWidth, fullScreenHeight, visualGameW, visualGameH, allow1point5);
 		
 		var theoreticalScale = Config.forceHiResAssets ? theoreticalFullscreenScale : theoreticalWindowedScale;
 		
@@ -335,21 +335,32 @@ class Universal extends Sprite
 		{
 			//maskLayer is added as a child of Universal later,
 			//so it needs to counteract Universal's scaleX/scaleY.
-			var drawX = x / scaleX;
-			var drawY = y / scaleY;
-			var drawWindowWidth = windowWidth / scaleX;
+			var spanHor = windowWidth / scaleX;
+			var spanVer = windowHeight / scaleY;
+			var gameW   = Config.stageWidth;
+			var gameH   = Config.stageHeight;
 
-			if (isTateMode) {
-				var drawX2 = drawX;
-				drawX = drawY;
-				drawY = drawX2;
+			var padCols : Float;
+			var padRows : Float;
+			var colLen  : Float;
+
+			if (!isTateMode) {
+				padCols = (spanHor - gameW) / 2;
+				padRows = (spanVer - gameH) / 2;
+				colLen  = spanVer - padRows*2;
+			}
+			else {
+				padCols = (spanVer - gameW) / 2;
+				padRows = (spanHor - gameH) / 2;
+				colLen  = spanHor - padRows*2;
 			}
 
 			maskLayer.graphics.beginFill(stage.color);
-			maskLayer.graphics.drawRect(-drawX, -drawY, drawWindowWidth, drawY);            // top
-			maskLayer.graphics.drawRect(-drawX, 0, drawX, scaledStageHeight);               // left
-			maskLayer.graphics.drawRect(scaledStageWidth, 0, drawX, scaledStageHeight);     // right
-			maskLayer.graphics.drawRect(-drawX, scaledStageHeight, drawWindowWidth, drawY); // bottom
+			// Draw rectangles          x            y            w         h
+			maskLayer.graphics.drawRect(-padCols,    -padRows,    spanHor,  padRows); // top
+			maskLayer.graphics.drawRect(-padCols,    0,           padCols,  colLen);  // left
+			maskLayer.graphics.drawRect(gameW,       0,           padCols,  colLen);  // right
+			maskLayer.graphics.drawRect(-padCols,    gameH,       spanHor,  padRows); // bottom
 			maskLayer.graphics.endFill();
 		}
 		
