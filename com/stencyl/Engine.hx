@@ -414,10 +414,12 @@ class Engine
 		stage.removeEventListener(FlashEvent.DEACTIVATE, engine.onFocusLost);
 		stage.removeEventListener(FlashEvent.ACTIVATE, engine.onFocus);
 		#if !flash
-		stage.removeEventListener(FlashEvent.RESIZE, engine.onWindowResize);
 		stage.window.onRestore.remove(engine.onWindowRestore);
 		stage.window.onMaximize.remove(engine.onWindowMaximize);
-		stage.window.onFullscreen.remove(engine.onWindowFullScreen);
+		#if (!leapin_lads) 
+			stage.window.onFullscreen.remove(engine.onWindowFullScreen);
+			stage.removeEventListener(FlashEvent.RESIZE, engine.onWindowResize);
+		#end
 		#end
 
 		if(engine.stats != null)
@@ -807,10 +809,12 @@ class Engine
 		stage.addEventListener(FlashEvent.DEACTIVATE, onFocusLost);
 		stage.addEventListener(FlashEvent.ACTIVATE, onFocus);
 		#if !flash
-		stage.addEventListener(FlashEvent.RESIZE, onWindowResize);
 		stage.window.onRestore.add(onWindowRestore);
 		stage.window.onMaximize.add(onWindowMaximize);
-		stage.window.onFullscreen.add(onWindowFullScreen);
+		#if (!leapin_lads) 
+			stage.window.onFullscreen.add(onWindowFullScreen);
+			stage.addEventListener(FlashEvent.RESIZE, onWindowResize);
+		#end
 		if(isFullScreen && !stage.window.fullscreen)
 			@:privateAccess stage.window.__fullscreen = true;
 		#end
