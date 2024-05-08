@@ -3359,6 +3359,8 @@ class Actor extends #if use_actor_tilemap TileContainer #else Sprite #end
 	
 	public function isMouseOver():Bool
 	{
+		if (!Input.mouseIsWithinStage) return false;
+
 		var mx:Float;
 		var my:Float;
 		

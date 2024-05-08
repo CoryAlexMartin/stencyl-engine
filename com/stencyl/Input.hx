@@ -35,6 +35,7 @@ class Input
 	public static var mouseY:Float = 0;
 	public static var mouseWheel:Bool;
 	public static var mouseWheelDelta:Int = 0;
+	public static var mouseIsWithinStage:Bool = true;
 	
 	public static var mouseDown:Bool;
 	public static var mousePressed:Bool;
@@ -530,6 +531,9 @@ class Input
 				mouseX = mouseY;
 				mouseY = mx;
 		}
+
+		mouseIsWithinStage = mouseX >= 0 && mouseX < Config.stageWidth && mouseY >= 0  && mouseY < Config.stageHeight;
+
 		#end
 	
 		var i = _controlsToReset.length;

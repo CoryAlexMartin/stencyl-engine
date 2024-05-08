@@ -1434,7 +1434,7 @@ class Script
 	
 	public static function isMousePressed():Bool
 	{
-		return Input.mousePressed;
+		return Input.mousePressed && Input.mouseIsWithinStage;
 	}
 
 	public static function isMouseReleased():Bool
