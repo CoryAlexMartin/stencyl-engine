@@ -344,16 +344,15 @@ class Universal extends Sprite
 			var padRows : Float;
 			var colLen  : Float;
 
-			if (!isTateMode) {
-				padCols = (spanHor - gameW) / 2;
-				padRows = (spanVer - gameH) / 2;
-				colLen  = spanVer - padRows*2;
+			if (isTateMode) {
+				var hor = spanHor;
+				spanHor = spanVer;
+				spanVer = hor;
 			}
-			else {
-				padCols = (spanVer - gameW) / 2;
-				padRows = (spanHor - gameH) / 2;
-				colLen  = spanHor - padRows*2;
-			}
+
+			padCols = (spanHor - gameW) / 2;
+			padRows = (spanVer - gameH) / 2;
+			colLen  = spanVer - padRows*2;
 
 			maskLayer.graphics.beginFill(stage.color);
 			// Draw rectangles          x            y            w         h
