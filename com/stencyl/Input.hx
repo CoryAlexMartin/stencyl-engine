@@ -532,7 +532,7 @@ class Input
 				mouseY = mx;
 		}
 
-		mouseIsWithinStage = mouseX >= 0 && mouseX < Config.stageWidth && mouseY >= 0  && mouseY < Config.stageHeight;
+		mouseIsWithinStage = Lib.application.window.mouseLock || (mouseX >= 0 && mouseX < Config.stageWidth && mouseY >= 0  && mouseY < Config.stageHeight);
 
 		#end
 	
