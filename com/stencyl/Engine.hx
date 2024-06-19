@@ -2806,7 +2806,15 @@ class Engine
 		// lag behind their parent actors. Scene behavior whenUpdated events
 		// happen before actor events, and actor event orders are seemingly
 		// random.
+		#if leapin_lads
 		scripts.ActorShadows.updateShadows();
+		#end
+
+		// I need to reset mouse booleans after all the game logic on mobile.
+		#if (leapin_lads && mobile)
+			scripts.Cursor.resetMouseButtonState();
+		#end
+
 
 		keyPollOccurred = false;
 			
