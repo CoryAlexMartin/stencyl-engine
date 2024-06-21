@@ -2811,8 +2811,8 @@ class Engine
 		#end
 
 		// I need to reset mouse booleans after all the game logic on mobile.
-		#if (leapin_lads && mobile)
-			scripts.Cursor.resetMouseButtonState();
+		#if leapin_lads
+		scripts.Cursor.touchPostUpdate();
 		#end
 
 
