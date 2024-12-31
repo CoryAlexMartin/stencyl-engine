@@ -7,8 +7,10 @@ import openfl.display.StageAlign;
 import openfl.display.StageScaleMode;
 import openfl.display.StageDisplayState;
 import openfl.display.Shape;
+import openfl.display.BitmapData;
 import openfl.events.Event;
 import lime.ui.Window;
+import flash.geom.Matrix;
 
 import com.stencyl.Config;
 import com.stencyl.Engine;
@@ -27,6 +29,8 @@ class Universal extends Sprite
 	public static var topInset = 0.0;
 	public static var rightInset = 0.0;
 	public static var bottomInset = 0.0;
+
+	public static var tile : BitmapData = null;
 	
 	public var maskLayer:Shape;
 
@@ -360,6 +364,26 @@ class Universal extends Sprite
 			maskLayer.graphics.drawRect(-padCols,    0,           padCols,  colLen);  // left
 			maskLayer.graphics.drawRect(gameW,       0,           padCols,  colLen);  // right
 			maskLayer.graphics.drawRect(-padCols,    gameH,       spanHor,  padRows); // bottom
+
+			if (tile != null) {
+				var w = 16;
+
+				var matrix = new Matrix();
+
+				// Left
+				maskLayer.graphics.beginBitmapFill(tile, matrix, true);
+
+				maskLayer.graphics.drawRect(-w, 0, w, colLen);
+
+				// Right
+				matrix.scale(-1, 1);    // Horizontal flip
+				matrix.translate(w, 0); // Translate back into view
+				
+				maskLayer.graphics.beginBitmapFill(tile, matrix, true);
+
+				maskLayer.graphics.drawRect(gameW, 0, w, colLen);
+			}
+
 			maskLayer.graphics.endFill();
 		}
 		
