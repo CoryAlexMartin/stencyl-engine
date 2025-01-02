@@ -247,6 +247,7 @@ class Engine
 	public var maskLayer:Shape;
 	public var master:Sprite; // the root of the main node
 	public var hudLayer:Layer; //Shows above everything else
+	public var superHudLayer:Layer; //Actually shows above everything else
 	public var transitionLayer:Sprite; //Shows above everything else
 	public var debugLayer:Sprite;
 	
@@ -993,8 +994,12 @@ class Engine
 			root.addChild(shaderLayer);
 		}
 		#end
-		
+
 		root.addChild(root.maskLayer);
+
+		superHudLayer = new Layer(-1, "__superhud__", -1, 0.0, 0.0, 1.0, BlendMode.NORMAL, null #if use_actor_tilemap, 0, 0 #end);
+		superHudLayer.name = "Super HUD Layer";
+		root.addChild(superHudLayer);
 		
 		//Initialize things	
 		actorsToCreateInNextScene = new Array();			
@@ -1094,6 +1099,7 @@ class Engine
 
 		#if use_actor_tilemap
 		hudLayer.setSize(scene.sceneWidth, scene.sceneHeight);
+		superHudLayer.setSize(scene.sceneWidth, scene.sceneHeight);
 		#end
 
 		#if !flash
@@ -1845,6 +1851,7 @@ class Engine
 			layer.clear();
 		}
 		hudLayer.clear();
+		superHudLayer.clear();
 		
 		Utils.removeAllChildren(master);
 		
@@ -2243,7 +2250,7 @@ class Engine
 		{
 			return;
 		}
-		if(layer == hudLayer)
+		if(layer == hudLayer || layer == superHudLayer)
 		{
 			if(a.physicsMode == NORMAL_PHYSICS)
 			{
@@ -2278,7 +2285,7 @@ class Engine
 			a.updateMatrix = true;
 		}
 		
-		if(layer == hudLayer)
+		if(layer == hudLayer || layer == superHudLayer)
 		{
 			if(a.physicsMode == NORMAL_PHYSICS)
 			{
@@ -3272,6 +3279,8 @@ class Engine
 		{
 			hudLayer.x = -Script.getScreenX();
 			hudLayer.y = -Script.getScreenY();
+			superHudLayer.x = -Script.getScreenX();
+			superHudLayer.y = -Script.getScreenY();
 		}
 	}
 	
@@ -3316,6 +3325,8 @@ class Engine
 		{
 			hudLayer.scaleX = 1 / m;
 			hudLayer.scaleY = 1 / m;
+			superHudLayer.scaleX = 1 / m;
+			superHudLayer.scaleY = 1 / m;
 		}
 	}
 
@@ -3412,6 +3423,7 @@ class Engine
 			l.overlay.graphics.clear();
 		}
 		hudLayer.overlay.graphics.clear();
+		superHudLayer.overlay.graphics.clear();
 		
 		g.graphics = transitionLayer.graphics;
      	g.graphics.clear();
