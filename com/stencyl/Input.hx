@@ -519,6 +519,7 @@ class Input
 		#if leapin_lads
 		switch scripts.Video.currentTateRotation {
 			case TateRotation_None:
+			case TateRotation_DownDown:
 			case TateRotation_RightDown:
 				mouseY *= -1;
 				var mx = mouseX;
