@@ -86,12 +86,12 @@ class Universal extends Sprite
 		#end
 
 		var isTateMode = Math.abs(rotation) == 90;
-		
+
 		#if desktop
 		if(!isFullScreen)
 		{
 			if (isTateMode) window.resize(Std.int(Config.stageHeight * Config.gameScale), Std.int(Config.stageWidth * Config.gameScale));
-			else            window.resize(Std.int(Config.stageWidth * Config.gameScale), Std.int(Config.stageHeight * Config.gameScale));
+			// else            window.resize(Std.int(Config.stageWidth * Config.gameScale), Std.int(Config.stageHeight * Config.gameScale));
 		}
 		#end
 
@@ -244,6 +244,11 @@ class Universal extends Sprite
 					scaleX = theoreticalWindowedScale / Engine.SCALE;
 					scaleY = scaleX;
 				}
+
+				if (!isFullScreen && !isTateMode) {
+					x += (windowWidth - scaledStageWidth * scaleX) / 2;
+					y += (windowHeight - scaledStageHeight * scaleY) / 2;
+				}
 			}
 
 			if(isFullScreen && Config.scaleMode != ScaleMode.SCALE_TO_FIT_FULLSCREEN && Config.scaleMode != ScaleMode.FULLSCREEN)
@@ -335,8 +340,9 @@ class Universal extends Sprite
 		#end
 		
 		maskLayer.graphics.clear();
-		if(isFullScreen && (Config.scaleMode == ScaleMode.SCALE_TO_FIT_LETTERBOX || Config.scaleMode == ScaleMode.NO_SCALING))
-		{
+
+		var sizeMismatch = windowWidth != Config.stageWidth * scaleX || windowHeight != Config.stageHeight * scaleY;
+		if (sizeMismatch) {
 			//maskLayer is added as a child of Universal later,
 			//so it needs to counteract Universal's scaleX/scaleY.
 			var spanHor = windowWidth / scaleX;
@@ -377,7 +383,7 @@ class Universal extends Sprite
 
 				// Right
 				matrix.scale(-1, 1);    // Horizontal flip
-				matrix.translate(w, 0); // Translate back into view
+				matrix.translate(gameW, 0); // Translate back into view
 				
 				maskLayer.graphics.beginBitmapFill(tile, matrix, true);
 
@@ -391,6 +397,8 @@ class Universal extends Sprite
 		Log.debug("Logical Height: " + logicalHeight);
 		Log.debug("Scale X: " + scaleX);
 		Log.debug("Scale Y: " + scaleY);
+		Log.debug("X: " + x);
+		Log.debug("Y: " + y);
 	}
 	
 	private function getDesiredScale(checkWidth:Float, checkHeight:Float, baseWidth:Int, baseHeight:Int, allow1point5:Bool = true):Float

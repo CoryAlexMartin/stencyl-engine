@@ -531,6 +531,8 @@ class Input
 				var mx = mouseX;
 				mouseX = mouseY;
 				mouseY = mx;
+
+			case TateRotation_Count:
 		}
 
 		mouseIsWithinStage = Lib.application.window.mouseLock || (mouseX >= 0 && mouseX < Config.stageWidth && mouseY >= 0  && mouseY < Config.stageHeight);
