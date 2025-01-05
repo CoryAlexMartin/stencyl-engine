@@ -372,7 +372,7 @@ class Universal extends Sprite
 			maskLayer.graphics.drawRect(-padCols,    gameH,       spanHor,  padRows); // bottom
 
 			if (tile != null) {
-				var w = 16;
+				var w = tile.width;
 
 				var matrix = new Matrix();
 
