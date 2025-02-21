@@ -156,9 +156,14 @@ class ScrollingBitmap extends Sprite
 					yP = yP % height;
 				}
 			}
-	        
-	        xPos += Math.floor(xP);
-	        yPos += Math.floor(yP);
+			
+	        xPos += xP;
+	        yPos += yP;
+
+			#if (!leapin_lads)
+			xPos = Math.floor(xP);
+			yPos = Math.floor(yP);
+	        #end
 	        
 			curStep += 1;
 			
