@@ -341,6 +341,7 @@ class Universal extends Sprite
 		
 		maskLayer.graphics.clear();
 
+		#if (!mobile)
 		var sizeMismatch = windowWidth != Config.stageWidth * scaleX || windowHeight != Config.stageHeight * scaleY;
 		if (sizeMismatch) {
 			//maskLayer is added as a child of Universal later,
@@ -392,6 +393,7 @@ class Universal extends Sprite
 
 			maskLayer.graphics.endFill();
 		}
+		#end
 		
 		Log.debug("Logical Width: " + logicalWidth);
 		Log.debug("Logical Height: " + logicalHeight);
