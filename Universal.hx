@@ -40,6 +40,10 @@ class Universal extends Sprite
 
 		window.stage.align = StageAlign.TOP_LEFT;
 		window.stage.scaleMode = StageScaleMode.NO_SCALE;
+
+		#if leapin_lads
+		window.stage.color = 0x1b1b34;
+		#end
 		
 		#if mobile
 		window.stage.opaqueBackground = 0x000000;
