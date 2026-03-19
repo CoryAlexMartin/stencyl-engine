@@ -30,7 +30,9 @@ class Universal extends Sprite
 	public static var rightInset = 0.0;
 	public static var bottomInset = 0.0;
 
-	public static var tile : BitmapData = null;
+	public static var tileMid : BitmapData = null;
+	public static var tileTop : BitmapData = null;
+	public static var tileBottom : BitmapData = null;
 	
 	public var maskLayer:Shape;
 
@@ -376,23 +378,82 @@ class Universal extends Sprite
 			maskLayer.graphics.drawRect(gameW,       0,           padCols,  colLen);  // right
 			maskLayer.graphics.drawRect(-padCols,    gameH,       spanHor,  padRows); // bottom
 
-			if (tile != null) {
-				var w = tile.width;
+			if (tileMid != null) {
+				var w = tileMid.width;
 
-				var matrix = new Matrix();
+				function drawTilesOnSide (x:Int, rightSide:Bool, flip:Bool) {
+					var matrix = new Matrix();
+					if (rightSide) matrix.translate(gameW, 0);
+					if (flip)      matrix.scale(-1, 1);
+
+					var y = 0;
+					var h = colLen;
+
+					if (tileTop != null) {
+						maskLayer.graphics.beginBitmapFill(tileTop, matrix, true);
+						maskLayer.graphics.drawRect(x, 0, w, tileTop.height);
+						h -= tileTop.height;
+						y += tileTop.height;
+					}
+
+					if (tileBottom != null) {
+						matrix.translate(x, h);
+						maskLayer.graphics.beginBitmapFill(tileBottom, matrix, true);
+						maskLayer.graphics.drawRect(x, h, w, tileBottom.height);
+						h -= tileBottom.height;
+					}
+
+					maskLayer.graphics.beginBitmapFill(tileMid, matrix, true);
+					maskLayer.graphics.drawRect(x, y, w, h);
+				}
+
+				drawTilesOnSide(-w, false, false);
+				drawTilesOnSide(gameW, true, true);
 
 				// Left
-				maskLayer.graphics.beginBitmapFill(tile, matrix, true);
+				/*
+				y = 0;
+				h = colLen;
 
-				maskLayer.graphics.drawRect(-w, 0, w, colLen);
+				if (tileTop != null) {
+					maskLayer.graphics.beginBitmapFill(tileTop, matrix, true);
+					maskLayer.graphics.drawRect(-w, 0, w, tileTop.height);
+					h -= tileTop.height;
+					y += tileTop.height;
+				}
+
+				if (tileBottom != null) {
+					maskLayer.graphics.beginBitmapFill(tileBottom, matrix, true);
+					maskLayer.graphics.drawRect(-w, colLen - tileBottom.height, w, tileBottom.height);
+					h -= tileBottom.height;
+				}
+
+				maskLayer.graphics.beginBitmapFill(tileMid, matrix, true);
+				maskLayer.graphics.drawRect(-w, y, w, h);
 
 				// Right
-				matrix.scale(-1, 1);    // Horizontal flip
-				matrix.translate(gameW, 0); // Translate back into view
-				
-				maskLayer.graphics.beginBitmapFill(tile, matrix, true);
+				y = 0;
+				h = colLen;
 
-				maskLayer.graphics.drawRect(gameW, 0, w, colLen);
+				matrix.scale(-1, 1);        // Horizontal flip
+				matrix.translate(gameW, 0); // Translate back into view
+
+				if (tileTop != null) {
+					maskLayer.graphics.beginBitmapFill(tileTop, matrix, true);
+					maskLayer.graphics.drawRect(gameW, y, w, tileTop.height);
+					h -= tileTop.height;
+					y += tileTop.height;
+				}
+
+				if (tileBottom != null) {
+					maskLayer.graphics.beginBitmapFill(tileBottom, matrix, true);
+					maskLayer.graphics.drawRect(gameW, colLen - tileBottom.height, w, tileBottom.height);
+					h -= tileBottom.height;
+				}
+				
+				maskLayer.graphics.beginBitmapFill(tileMid, matrix, true);
+				maskLayer.graphics.drawRect(gameW, y, w, h);
+				*/
 			}
 
 			maskLayer.graphics.endFill();
